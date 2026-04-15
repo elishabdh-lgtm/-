@@ -165,11 +165,8 @@ F_LATIN   = _find_font("arial.ttf",  "LiberationSans-Regular.ttf", "DejaVuSans.t
 W, H = 900, 1500
 
 def he(text):
-    """עברית RTL — הפוך מילים + תווים לרינדור LTR של Pillow"""
-    text = str(text)
-    words = text.split(' ')
-    reversed_words = [w[::-1] for w in words]
-    return ' '.join(reversed(reversed_words))
+    """עברית RTL"""
+    return str(text)
 
 def draw_gradient(img):
     draw = ImageDraw.Draw(img)
