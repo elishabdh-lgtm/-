@@ -8,7 +8,6 @@ import xml.etree.ElementTree as ET
 from deep_translator import GoogleTranslator
 from datetime import datetime
 from PIL import Image, ImageDraw, ImageFont
-from bidi.algorithm import get_display
 
 if hasattr(sys.stdout, "reconfigure"):
     sys.stdout.reconfigure(encoding="utf-8")
@@ -166,8 +165,11 @@ F_LATIN   = _find_font("arial.ttf",  "LiberationSans-Regular.ttf", "DejaVuSans.t
 W, H = 900, 1500
 
 def he(text):
-    """עברית RTL"""
-    return get_display(str(text))
+    """עברית RTL — הפוך מילים + תווים לרינדור LTR של Pillow"""
+    text = str(text)
+    words = text.split(' ')
+    reversed_words = [w[::-1] for w in words]
+    return ' '.join(reversed(reversed_words))
 
 def draw_gradient(img):
     draw = ImageDraw.Draw(img)
