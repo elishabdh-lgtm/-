@@ -1,0 +1,56 @@
+name: Daily Portfolio Morning Brief
+
+on:
+  schedule:
+    # 06:00 UTC = 09:00 Israel (UTC+3 summer / UTC+2 winter)
+    - cron: '0 6 * * 1-5'   # ימים א-ה (Sun-Thu בישראל)
+  workflow_dispatch:          # כפתור הרצה ידנית מ-GitHub
+
+jobs:
+  send-morning-brief:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+          cache: 'pip'
+
+      - name: Install system fonts (Hebrew support)
+        run: |
+          sudo apt-get update -qq
+          sudo apt-get install -y -qq fonts-dejavu-core ttf-mscorefonts-installer 2>/dev/null || true
+          sudo apt-get install -y -qq fonts-liberation 2>/dev/null || true
+          fc-cache -fv 2>/dev/null || true
+
+      - name: Install Python dependencies
+        run: pip install -r requirements.txt
+
+      - name: Create Telegram config
+        env:
+          BOT_TOKEN: ${{ secrets.BOT_TOKEN }}
+          CHAT_ID: ${{ secrets.CHAT_ID }}
+        run: |
+          python -c "
+          import json, os
+          config = {'bot_token': os.environ['BOT_TOKEN'], 'chat_id': os.environ['CHAT_ID']}
+          with open('telegram_config.json', 'w') as f:
+              json.dump(config, f)
+          print('Config created')
+          "
+
+      - name: Run morning brief
+        run: python telegram_news.py
+
+      - name: Upload image artifact (debug)
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: morning-brief-image
+          path: morning_brief.png
+          retention-days: 3
